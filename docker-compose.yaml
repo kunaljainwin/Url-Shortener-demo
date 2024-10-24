@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  nuxt:
+    image: node:18 # or the version you're using
+    container_name: nuxt-app
+    working_dir: /app
+    tty: true
+    volumes:
+      - ./:/app
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://root:Root@123@postgres:5432/mydatabase
+      - REDIS_URL=redis://redis:6379
+    command: 
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:latest # or the version you're using
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=Root@123
+      - POSTGRES_DB=default
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6 # or the version you're using
+    container_name: redis
+
+volumes:
+  postgres_data:
