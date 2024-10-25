@@ -1,0 +1,1 @@
+export default defineEventHandler(()=>console.log("Called ./composables/comp.ts"))
