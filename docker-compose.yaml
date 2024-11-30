@@ -11,8 +11,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
       - mongo-primary-data:/data/db
-      - .database/scripts:/scripts
-    command: bash -c "mongod --replSet $MONGO_INITDB_REPLICA_SET_NAME --bind_ip_all && /scripts/init-replica.sh"
+      - ./database/mongodb/scripts:/scripts
+    command: bash -c "mongod --replSet rs0 --bind_ip_all && /scripts/init-replica.sh"
 
   # MongoDB Replica 1
   mongo-replica1:
@@ -22,7 +22,7 @@ services:
       - MONGO_INITDB_REPLICA_SET_NAME=rs0
     volumes:
       - mongo-replica1-data:/data/db
-    command: mongod --replSet $MONGO_INITDB_REPLICA_SET_NAME --bind_ip_all
+    command: mongod --replSet rs0 --bind_ip_all
 
   # MongoDB Replica 2
   mongo-replica2:
@@ -32,34 +32,34 @@ services:
       - MONGO_INITDB_REPLICA_SET_NAME=rs0
     volumes:
       - mongo-replica2-data:/data/db
-    command: mongod --replSet $MONGO_INITDB_REPLICA_SET_NAME --bind_ip_all
+    command: mongod --replSet rs0 --bind_ip_all
 
-# Redis Master
-redis-master:
-  image: redis:6-alpine
-  container_name: redis-master
-  volumes:
-    - redis-master-data:/data
-
-# Redis Slave
-redis-slave:
-  image: redis:6-alpine
-  container_name: redis-slave
-  environment:
-    - REDIS_REPLICATION_MODE=slave
-    - REDIS_MASTER_HOST=redis-master
-    - REDIS_MASTER_PORT=6379
-  volumes:
-    - redis-slave-data:/data
-  depends_on:
-    - redis-master
+  # Redis Master
+  redis-master:
+    image: redis:6-alpine
+    container_name: redis-master
+    volumes:
+      - redis-master-data:/data
+  # Redis Slave
+  redis-slave:
+    image: redis:6-alpine
+    container_name: redis-slave
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT=6379
+    command: redis-server --slaveof redis-master 6379
+    volumes:
+      - redis-slave-data:/data
+    depends_on:
+      - redis-master
 
 
   # Node.js Backend
   backend:
     build: ./backend
     container_name: backend
-    volumes:
+    volumes: 
       - ./backend:/app
     depends_on:
       - mongo-primary
@@ -83,3 +83,5 @@ volumes:
   mongo-primary-data:
   mongo-replica1-data:
   mongo-replica2-data:
+  redis-master-data:
+  redis-slave-data:

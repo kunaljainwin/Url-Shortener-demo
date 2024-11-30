@@ -16,15 +16,22 @@ services:
     ports:
       - "27019:27017"
 
-# Redis Master
-redis-master:
-  ports:
-    - "6379:6379"
+  # # Docker Compass
+  # mongo-compass:
+  #   image: mongo-compass/compass:latest
+  #   container_name: mongo-compass
+  #   ports:
+  #     - "8081:8081"
+    
+  # Redis Master
+  redis-master:
+    ports:
+      - "6379:6379"
 
-# Redis Slave
-redis-slave:
-  ports:
-    - "6380:6379"
+  # Redis Slave
+  redis-slave:
+    ports:
+      - "6380:6379"
 
   # Node.js Backend
   backend:
