@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # MongoDB Primary (Master)
+  mongo-primary:
+    ports:
+      - "27017:27017"
+   
+  # MongoDB Replica 1
+  mongo-replica1:
+    ports:
+      - "27018:27017"
+
+  # MongoDB Replica 2
+  mongo-replica2:
+    ports:
+      - "27019:27017"
+
+# Redis Master
+redis-master:
+  ports:
+    - "6379:6379"
+
+# Redis Slave
+redis-slave:
+  ports:
+    - "6380:6379"
+
+  # Node.js Backend
+  backend:
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+
+  # NGINX
+  nginx:
+    ports:
+      - "80:80"

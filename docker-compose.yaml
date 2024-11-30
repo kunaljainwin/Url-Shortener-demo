@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # MongoDB Primary (Master)
+  mongo-primary:
+    image: mongo:4.2
+    container_name: mongo-primary
+    environment:
+      - MONGO_INITDB_REPLICA_SET_NAME=rs0
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-primary-data:/data/db
+      - .database/scripts:/scripts
+    command: bash -c "mongod --replSet $MONGO_INITDB_REPLICA_SET_NAME --bind_ip_all && /scripts/init-replica.sh"
+
+  # MongoDB Replica 1
+  mongo-replica1:
+    image: mongo:4.2
+    container_name: mongo-replica1
+    environment:
+      - MONGO_INITDB_REPLICA_SET_NAME=rs0
+    volumes:
+      - mongo-replica1-data:/data/db
+    command: mongod --replSet $MONGO_INITDB_REPLICA_SET_NAME --bind_ip_all
+
+  # MongoDB Replica 2
+  mongo-replica2:
+    image: mongo:4.2
+    container_name: mongo-replica2
+    environment:
+      - MONGO_INITDB_REPLICA_SET_NAME=rs0
+    volumes:
+      - mongo-replica2-data:/data/db
+    command: mongod --replSet $MONGO_INITDB_REPLICA_SET_NAME --bind_ip_all
+
+# Redis Master
+redis-master:
+  image: redis:6-alpine
+  container_name: redis-master
+  volumes:
+    - redis-master-data:/data
+
+# Redis Slave
+redis-slave:
+  image: redis:6-alpine
+  container_name: redis-slave
+  environment:
+    - REDIS_REPLICATION_MODE=slave
+    - REDIS_MASTER_HOST=redis-master
+    - REDIS_MASTER_PORT=6379
+  volumes:
+    - redis-slave-data:/data
+  depends_on:
+    - redis-master
+
+
+  # Node.js Backend
+  backend:
+    build: ./backend
+    container_name: backend
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - mongo-primary
+      - mongo-replica1
+      - mongo-replica2
+      - redis-master
+      - redis-slave
+
+  # NGINX
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - backend
+
+volumes:
+  mongo-primary-data:
+  mongo-replica1-data:
+  mongo-replica2-data:
