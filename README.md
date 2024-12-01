@@ -25,3 +25,4 @@ Efficiency: The system should be efficient in terms of read/write operations.
 Security: Prevent abuse of services and ensure secure encoding of data.
 
 Bandwidth: Estimate the bandwidth requirements based on expected traffic.
+

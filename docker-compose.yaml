@@ -67,6 +67,7 @@ services:
       - mongo-replica2
       - redis-master
       - redis-slave
+    tty: true
 
   # NGINX
   nginx:
